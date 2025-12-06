@@ -1,0 +1,46 @@
+
+# Test Suite (ESP32 On-Board)
+
+This repository ships a GoogleTest-powered suite that runs directly on the ESP32-S3 dev kit. It validates the helper utilities used to parse LD2450 radar frames, so contributors can refactor logic without connecting the physical sensor.
+
+## Contents
+
+- `test_onboard/test_ld2450_radar.cpp` boots an Arduino sketch, calls `RUN_ALL_TESTS()` inside `loop()`, and exercises the helper layer.
+- `test_onboard/SerialMock.h` provides a `Stream` mock using GoogleMock so we can feed deterministic serial data.
+
+## Covered Scenarios
+
+- Vector helpers keep packet fragments ordered (`concatenate_vectors`).
+- Serial ingestion stops at protocol markers and discards trailing bytes (`read_until`).
+- Little-endian conversions are reversible for 16-bit payload fields (`to_little_endian`, `from_little_endian`).
+- Byte pattern lookups catch sync markers inside buffers (`contains`).
+- Unsigned-to-signed translation matches the radar's direction encoding (`to_signed`).
+
+Treat this list as a living contract; extend it whenever helper behavior grows.
+
+## Running the Suite
+
+1. Plug the ESP32-S3 board into USB (sensor optional; serial data is mocked).
+2. From the project root run:
+
+```bash
+pio test -e test-onboard
+```
+
+PlatformIO flashes the test binary, attaches to the configured `monitor_speed` (115200 baud), and streams GoogleTest output.
+
+### Tips
+
+- If auto-detection fails, pass the port manually: `pio test -e test-onboard --upload-port /dev/tty.usbserial-*`.
+- Keep `monitor_speed` in `platformio.ini` aligned with your board to avoid garbled logs.
+
+## Contributing Tests
+
+- Use `SerialMock` plus `ON_CALL` expectations to script new byte streams.
+- Group helper-focused assertions under the existing `Helpers` test fixture for readability.
+- Add short notes here whenever new helpers or protocols gain coverage so GitHub readers know what the suite guarantees.
+
+## Notes
+
+- This README section was drafted with AI assistance for documentation clarity.
+- The underlying test cases (`test_onboard/test_ld2450_radar.cpp`) remain hand-crafted and reviewed by the maintainers.
