@@ -78,7 +78,7 @@ class LD2450_Radar
     ZoneConfig getZoneConfig();
     bool setZoneConfig(ZoneConfig& zoneConfig);
     PositionData getTargetTrackingData(const vector<uint8_t>& serialData);
-    void loop();
+    virtual void loop();
  
     /**
      * @brief The serial port (hardware or software) to use for communicating with the sensor
